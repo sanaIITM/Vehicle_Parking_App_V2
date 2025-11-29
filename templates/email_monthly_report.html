@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Monthly Parking Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #222; }
+    h2 { color: #4b0082; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 6px 8px; font-size: 13px; }
+    th { background-color: #f2f2f2; }
+  </style>
+</head>
+<body>
+  <h2>Monthly Parking Report - {{ month_label }}</h2>
+  <p>Hello {{ user.username }},</p>
+  <p>Here is your parking activity summary for <strong>{{ month_label }}</strong>:</p>
+
+  <ul>
+    <li><strong>Total reservations:</strong> {{ reservations|length }}</li>
+    <li><strong>Total amount spent:</strong> ₹{{ '%.2f'|format(total_spent) }}</li>
+    {% if most_used_lot %}
+    <li><strong>Most used parking lot:</strong> {{ most_used_lot }}</li>
+    {% endif %}
+  </ul>
+
+  <h3>Reservations Detail</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Lot</th>
+        <th>Spot</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Cost</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in reservations %}
+      <tr>
+        <td>{{ r.id }}</td>
+        <td>{{ r.spot.lot.name if r.spot and r.spot.lot else 'Unknown' }}</td>
+        <td>{{ r.spot_id }}</td>
+        <td>{{ r.start_time.strftime('%Y-%m-%d %H:%M') if r.start_time else '' }}</td>
+        <td>{{ r.end_time.strftime('%Y-%m-%d %H:%M') if r.end_time else '-' }}</td>
+        <td>{% if r.cost is not none %}₹{{ '%.2f'|format(r.cost) }}{% else %}-{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p style="margin-top: 15px;">Thank you for using the Vehicle Parking App.</p>
+</body>
+</html>

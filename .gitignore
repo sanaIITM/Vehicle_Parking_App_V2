@@ -1,0 +1,59 @@
+# -------------------------
+# Python
+# -------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# -------------------------
+# Virtual environments
+# -------------------------
+venv/
+venv*/
+.env/
+.env
+
+# -------------------------
+# Instance / local config
+# -------------------------
+instance/
+
+# -------------------------
+# Databases
+# -------------------------
+*.db
+*.sqlite
+*.sqlite3
+
+# -------------------------
+# Celery / Beat runtime files
+# -------------------------
+celerybeat-schedule
+celerybeat-schedule.*
+*.pid
+
+# -------------------------
+# Caches / logs
+# -------------------------
+*.log
+.cache/
+
+# -------------------------
+# OS / editor junk
+# -------------------------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# -------------------------
+# Node (safety – even if unused)
+# -------------------------
+node_modules/
+
+# -------------------------
+# Byte-compiled & temp
+# -------------------------
+*.tmp
+*.swp

@@ -1,0 +1,1229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vehicle Parking App - V2</title>
+
+  <!-- Bootstrap -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg-main: #050814;
+      --bg-panel: #11152b;
+      --bg-card: #181d3a;
+      --accent: #7b2cbf;
+      --accent-soft: #9d4edd;
+      --accent-alt: #2dd4bf;
+      --danger: #f97373;
+      --text-main: #f9fafb;
+      --text-muted: #d1d5db;
+      --border-soft: #1f2937;
+      --radius-lg: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-size: 17px; /* slightly larger for readability */
+      background: radial-gradient(circle at top, #22124a 0, #050814 42%, #020617 100%);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .app-shell {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 265px; /* widened ~15% */
+      background: linear-gradient(to bottom, #050816, #020617);
+      border-right: 1px solid var(--border-soft);
+      padding: 20px 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .brand-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: .03em;
+    }
+
+    .brand-sub {
+      font-size: 1rem;
+      color: var(--text-muted);
+    }
+
+    .sidebar-section-title {
+      font-size: .9rem;
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      opacity: .9;
+    }
+
+    .nav-pills-custom .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 999px;
+      color: var(--text-muted);
+      padding: 9px 16px;
+      font-size: 1rem;
+      border: 1px solid transparent;
+      background: transparent;
+    }
+
+    .nav-pills-custom .nav-link.active {
+      background: radial-gradient(circle at top left, #7b2cbf, #4c1d95);
+      color: var(--text-main);
+      border-color: rgba(148, 163, 184, 0.25);
+      box-shadow: 0 0 0 1px rgba(129, 140, 248, .45);
+    }
+
+    .nav-icon-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 18px;
+      border-top: 1px solid var(--border-soft);
+      font-size: 1rem;
+    }
+
+    .avatar-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 18px;
+      background: #020617;
+      border: 1px solid #111827;
+    }
+
+    .avatar-main {
+      display: flex;
+      align-items: center;
+    }
+
+    .avatar-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .95rem;
+      background: radial-gradient(circle at top, #4ade80, #22c55e);
+      color: #022c22;
+      font-weight: 600;
+    }
+
+    .avatar-meta {
+      display: flex;
+      flex-direction: column;
+      margin-left: 8px;
+    }
+
+    .avatar-name {
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .avatar-role {
+      font-size: .9rem;
+      color: var(--accent-alt);
+    }
+
+    .avatar-logout-btn {
+      margin-top: 4px;
+      border-radius: 999px;
+      border: none;
+      padding: 8px 10px;
+      font-size: 1rem;
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+      color: #f9fafb;
+      text-align: center;
+      width: 100%;
+    }
+
+    .content-shell {
+      flex: 1;
+      padding: 20px 24px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .top-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-soft {
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: rgba(15, 23, 42, .9);
+      color: #e5e7eb;
+      padding: 8px 18px;
+      font-size: 1rem;
+    }
+
+    .btn-soft:hover {
+      background: #111827;
+      color: #f9fafb;
+    }
+
+    .btn-accent {
+      border-radius: 999px;
+      border: none;
+      padding: 11px 20px;
+      font-size: 1.05rem;
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+      color: white;
+      box-shadow: 0 8px 24px rgba(147, 51, 234, .35);
+    }
+
+    .btn-accent:disabled {
+      opacity: .7;
+      box-shadow: none;
+    }
+
+    .btn-pill-sm {
+      border-radius: 999px;
+      padding: 9px 18px;
+      font-size: 1rem;
+      border: none;
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+      color: #f9fafb;
+      box-shadow: 0 10px 28px rgba(129, 140, 248, .35);
+      white-space: nowrap;
+    }
+
+    .btn-pill-sm:disabled {
+      opacity: .65;
+      box-shadow: none;
+    }
+
+    .dashboard-panel {
+      flex: 1;
+      background: rgba(15, 23, 42, .78);
+      border-radius: 20px;
+      border: 1px solid var(--border-soft);
+      padding: 20px 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, .85);
+      backdrop-filter: blur(16px);
+    }
+
+    .hero-title {
+      font-size: 2.1rem; /* larger dashboard title */
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .hero-sub {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+    }
+
+    .alert-inline {
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: .95rem;
+      margin-bottom: 6px;
+    }
+
+    .alert-success-inline {
+      background: rgba(22, 163, 74, 0.12);
+      border: 1px solid rgba(34, 197, 94, .35);
+      color: #bbf7d0;
+    }
+
+    .alert-error-inline {
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, .8);
+      color: #fecaca;
+    }
+
+    .cards-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px 18px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .stat-label {
+      font-size: .95rem;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .stat-main {
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    .stat-sub {
+      font-size: 1rem;
+      color: var(--text-muted);
+    }
+
+    .chart-card,
+    .table-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px 18px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .chart-header,
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .chart-title,
+    .table-title {
+      font-size: 1.15rem;
+      font-weight: 500;
+    }
+
+    .chart-sub,
+    .table-sub {
+      font-size: 1rem;
+      color: var(--text-muted);
+    }
+
+    .chart-wrapper {
+      height: 230px;
+    }
+
+    .tables-row-2 {
+      display: grid;
+      grid-template-columns: 1.6fr 1.4fr;
+      gap: 16px;
+    }
+
+    .tables-row-1 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    /* TABLES – dark background + white text for header and rows */
+    .table {
+      font-size: 1rem;
+      color: #f9fafb;
+      margin-bottom: 0;
+    }
+
+    .table thead tr {
+      background: #111827; /* dark grey header */
+    }
+
+    .table thead th {
+      border-bottom: 1px solid rgba(75, 85, 99, .9);
+      border-top: none;
+      color: #f9fafb;       /* white header text */
+      font-weight: 600;
+    }
+
+    .table tbody tr {
+      background: #020617;  /* dark background for rows */
+    }
+
+    .table tbody tr:nth-child(even) {
+      background: #0b1120;  /* subtle zebra */
+    }
+
+    .table tbody td {
+      border-color: rgba(31, 41, 55, .7);
+      vertical-align: middle;
+      color: #f9fafb;       /* white row text */
+    }
+
+    .badge-soft {
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: .9rem;
+      background: rgba(148, 163, 184, 0.12);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--text-muted);
+    }
+
+    .badge-positive {
+      color: #bbf7d0;
+      background: rgba(22, 163, 74, 0.22);
+      border-color: rgba(22, 163, 74, .55);
+    }
+
+    .form-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px;
+      border: 1px dashed rgba(148, 163, 184, .4);
+      margin-bottom: 12px;
+    }
+
+    .form-card .form-control {
+      background: rgba(15, 23, 42, .9);
+      border-color: rgba(55, 65, 81, .9);
+      color: var(--text-main);
+      font-size: 1rem;
+    }
+
+    .form-card .form-control::placeholder {
+      color: #9ca3af;
+    }
+
+    .form-card .form-control:focus {
+      box-shadow: 0 0 0 1px rgba(129, 140, 248, .7);
+      border-color: var(--accent-soft);
+      background: #020617;
+    }
+
+    .auth-layout {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 552px; /* ~20% larger than 460px */
+      background: rgba(15, 23, 42, .96);
+      border-radius: 20px;
+      padding: 30px 30px 28px; /* slightly more padding */
+      border: 1px solid #1f2937;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, .9);
+    }
+
+    .auth-label {
+      font-size: 1rem;
+      margin-bottom: 4px;
+      color: var(--text-muted);
+    }
+
+    .auth-card .form-control {
+      background: #020617;
+      border-color: #1f2937;
+      color: var(--text-main);
+      font-size: 1rem;
+      padding: 10px 12px;
+    }
+
+    .auth-card .form-control::placeholder {
+      color: #6b7280;
+    }
+
+    .auth-card .form-control:focus {
+      border-color: var(--accent-soft);
+      box-shadow: 0 0 0 1px rgba(147, 51, 234, .7);
+    }
+
+    .auth-link {
+      font-size: 1rem;
+      color: var(--accent-alt);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .auth-link:hover {
+      text-decoration: underline;
+      color: #a5f3fc;
+    }
+
+    @media (max-width: 992px) {
+      .sidebar {
+        display: none;
+      }
+      .content-shell {
+        padding: 12px;
+      }
+      .dashboard-panel {
+        padding: 14px;
+      }
+      .cards-row,
+      .tables-row-2,
+      .tables-row-1 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* === FORCE DARK ASH TABLE BACKGROUNDS (OVERRIDE BOOTSTRAP) === */
+    .table {
+      background-color: #0f172a !important;   /* ash/dark grey */
+      color: #f9fafb !important;
+    }
+
+    /* Header */
+    .table thead,
+    .table thead tr,
+    .table thead th {
+      background-color: #1f2937 !important;   /* darker header */
+      color: #f9fafb !important;
+      border-color: #374151 !important;
+    }
+
+    /* Body rows */
+    .table tbody,
+    .table tbody tr,
+    .table tbody td {
+      background-color: #0f172a !important;   /* ash grey rows */
+      color: #f9fafb !important;
+      border-color: #334155 !important;
+    }
+
+    /* Hover effect */
+    .table-hover tbody tr:hover {
+      background-color: #1e293b !important;
+    }
+
+    /* Zebra striping (if Bootstrap applies it) */
+    .table-striped > tbody > tr:nth-of-type(even) {
+      background-color: #111827 !important;
+    }
+
+  </style>
+</head>
+<body>
+{% raw %}
+<div id="app" class="app-shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div>
+      <div>
+        <div class="brand-title">Parking V2</div>
+        <div class="brand-sub">Smart 4-wheeler parking</div>
+      </div>
+
+      <div class="mt-4">
+        <div class="sidebar-section-title">Navigation</div>
+
+        <!-- Not logged in -->
+        <ul class="nav flex-column nav-pills-custom" v-if="!me">
+          <li class="nav-item mb-1">
+            <button class="nav-link active w-100">
+              <span class="nav-icon-dot"></span>
+              <span>Login</span>
+            </button>
+          </li>
+        </ul>
+
+        <!-- Admin nav -->
+        <ul class="nav flex-column nav-pills-custom" v-else-if="me.role === 'admin'">
+          <li class="nav-item mb-1">
+            <button
+              class="nav-link w-100"
+              :class="{ active: adminTab === 'dashboard' }"
+              @click="adminTab = 'dashboard'"
+            >
+              <span class="nav-icon-dot"></span>
+              <span>Dashboard</span>
+            </button>
+          </li>
+          <li class="nav-item mb-1">
+            <button
+              class="nav-link w-100"
+              :class="{ active: adminTab === 'lots' }"
+              @click="adminTab = 'lots'"
+            >
+              <span class="nav-icon-dot"></span>
+              <span>Parking Lots</span>
+            </button>
+          </li>
+          <li class="nav-item mb-1">
+            <button
+              class="nav-link w-100"
+              :class="{ active: adminTab === 'users' }"
+              @click="adminTab = 'users'"
+            >
+              <span class="nav-icon-dot"></span>
+              <span>Users</span>
+            </button>
+          </li>
+        </ul>
+
+        <!-- User nav -->
+        <ul class="nav flex-column nav-pills-custom" v-else>
+          <li class="nav-item mb-1">
+            <button class="nav-link active w-100">
+              <span class="nav-icon-dot"></span>
+              <span>Dashboard</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sidebar-footer" v-if="me">
+      <div class="avatar-pill">
+        <div class="avatar-main">
+          <div class="avatar-circle">
+            {{ me.username.charAt(0).toUpperCase() }}
+          </div>
+          <div class="avatar-meta">
+            <span class="avatar-name">{{ me.username }}</span>
+            <span class="avatar-role">
+              {{ me.role === 'admin' ? 'Admin' : 'User' }}
+            </span>
+          </div>
+        </div>
+        <button
+          class="avatar-logout-btn"
+          @click="apiLogout"
+          :disabled="loading"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="content-shell">
+    <!-- LOGIN VIEW: ONLY CARD -->
+    <div v-if="!me" class="auth-layout">
+      <div class="auth-card">
+        <h4 class="mb-1">Vehicle Parking App - V2</h4>
+        <p class="hero-sub mb-4">
+          Login to continue.
+        </p>
+
+        <div class="mb-3">
+          <span class="auth-label">Username</span>
+          <input
+            type="text"
+            class="form-control"
+            v-model="loginForm.username"
+            placeholder="admin or you@example.com"
+          >
+        </div>
+        <div class="mb-4">
+          <span class="auth-label">Password</span>
+          <input
+            type="password"
+            class="form-control"
+            v-model="loginForm.password"
+            placeholder="••••••••"
+          >
+        </div>
+
+        <button
+          class="btn-accent w-100 mb-3"
+          :disabled="loading"
+          @click="apiLogin"
+        >
+          <span v-if="loading">Signing in…</span>
+          <span v-else>Login</span>
+        </button>
+
+        <p class="mt-2 mb-0 text-center" style="font-size: 1rem;">
+          New user?
+          <span class="auth-link" @click.prevent="showRegister = !showRegister">
+            Register
+          </span>
+        </p>
+
+        <!-- Collapsible register form (still here, but only appears on click) -->
+        <div v-if="showRegister" class="mt-3 pt-3 border-top border-secondary border-opacity-25">
+          <div class="mb-2">
+            <span class="auth-label">Username (email)</span>
+            <input
+              type="email"
+              class="form-control"
+              v-model="registerForm.username"
+              placeholder="you@example.com"
+            >
+          </div>
+          <div class="mb-3">
+            <span class="auth-label">Password</span>
+            <input
+              type="password"
+              class="form-control"
+              v-model="registerForm.password"
+              placeholder="Choose a password"
+            >
+          </div>
+          <button
+            class="btn-pill-sm w-100"
+            :disabled="loading"
+            @click="apiRegister"
+          >
+            <span v-if="loading">Registering…</span>
+            <span v-else>Create Account</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGGED-IN CONTENT -->
+    <div v-else>
+      <!-- HEADER -->
+      <div class="top-bar">
+        <div>
+          <div
+            v-if="globalMessage"
+            class="alert-inline alert-success-inline"
+          >
+            {{ globalMessage }}
+          </div>
+          <div
+            v-if="globalError"
+            class="alert-inline alert-error-inline"
+          >
+            {{ globalError }}
+          </div>
+
+          <div class="hero-title">
+            {{ me.role === 'admin' ? 'Admin Dashboard' : 'User Dashboard' }}
+          </div>
+          <div class="hero-sub" v-if="me.role === 'admin'">
+            Manage parking lots, users and monitor revenue.
+          </div>
+          <div class="hero-sub" v-else>
+            Book, track and analyze your parking usage.
+          </div>
+        </div>
+
+        <div class="top-bar-actions">
+          <button
+            v-if="me.role === 'user'"
+            class="btn-soft"
+            :disabled="loading"
+            @click="apiExportCsv"
+          >
+            Export history CSV
+          </button>
+          <button
+            class="btn-soft"
+            :disabled="loading"
+            @click="refreshCurrent"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- MAIN PANEL -->
+      <section class="dashboard-panel">
+        <!-- ADMIN VIEW -->
+        <div v-if="me.role === 'admin'">
+          <!-- DASHBOARD TAB -->
+          <div v-if="adminTab === 'dashboard'">
+            <!-- Top stats -->
+            <div class="cards-row mb-3">
+              <div class="stat-card">
+                <span class="stat-label">Total Users</span>
+                <span class="stat-main">
+                  {{ adminDashboard ? adminDashboard.users.length : 0 }}
+                </span>
+                <span class="stat-sub">Registered (non-admin)</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Total Parking Lots</span>
+                <span class="stat-main">
+                  {{ adminDashboard ? adminDashboard.lots.length : 0 }}
+                </span>
+                <span class="stat-sub">Across all locations</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Total Revenue</span>
+                <span class="stat-main">
+                  ₹{{ adminSummary.totalRevenue.toFixed(2) }}
+                </span>
+                <span class="stat-sub">Based on completed reservations</span>
+              </div>
+            </div>
+
+            <!-- Monthly revenue chart + controls -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">Monthly Revenue</div>
+                </div>
+                <div class="d-flex gap-2">
+                  <button
+                    class="btn-soft btn-sm"
+                    :disabled="loading"
+                    @click="debugRunDailyReminders"
+                  >
+                    Run Daily Reminders
+                  </button>
+                  <button
+                    class="btn-soft btn-sm"
+                    :disabled="loading"
+                    @click="debugRunMonthlyReports"
+                  >
+                    Run Monthly Reports
+                  </button>
+                </div>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="adminRevenueChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- PARKING LOTS TAB -->
+          <div v-if="adminTab === 'lots'" class="mt-1">
+            <!-- Configured lots + occupancy -->
+            <div class="tables-row-2 mb-3">
+              <div class="table-card">
+                <div class="table-header">
+                  <div>
+                    <div class="table-title">Configured Parking Lots</div>
+                  </div>
+                </div>
+                <div class="table-responsive" style="max-height: 260px; overflow: auto;">
+                  <table class="table table-hover align-middle">
+                    <thead>
+                      <tr>
+                        <th>Lot</th>
+                        <th>Location</th>
+                        <th>₹/hr</th>
+                        <th>Total</th>
+                        <th>Free</th>
+                        <th>Occupied</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-if="!adminDashboard || adminDashboard.lots.length === 0">
+                        <td colspan="6" class="text-center text-muted">
+                          No parking lots configured yet.
+                        </td>
+                      </tr>
+                      <tr v-for="lot in (adminDashboard ? adminDashboard.lots : [])"
+                          :key="lot.id">
+                        <td>{{ lot.name }}</td>
+                        <td>{{ lot.address }} ({{ lot.pincode }})</td>
+                        <td>₹{{ lot.price_per_hour }}</td>
+                        <td>{{ lot.total_spots }}</td>
+                        <td>{{ lot.available_spots }}</td>
+                        <td>{{ lot.occupied_spots }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="chart-card">
+                <div class="chart-header">
+                  <div>
+                    <div class="chart-title">Spot Occupancy</div>
+                  </div>
+                </div>
+                <div class="chart-wrapper">
+                  <canvas id="adminOccupancyChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Create lot form -->
+            <div class="form-card mb-3">
+              <div class="chart-header mb-2">
+                <div>
+                  <div class="chart-title">Create Parking Lot</div>
+                </div>
+              </div>
+              <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                  <label class="auth-label">Lot Name</label>
+                  <input class="form-control" v-model="newLot.name" placeholder="lot A" />
+                </div>
+                <div class="col-md-2">
+                  <label class="auth-label">Price/hr</label>
+                  <input type="number" step="0.01"
+                         class="form-control"
+                         v-model="newLot.price_per_hour"
+                         placeholder="40" />
+                </div>
+                <div class="col-md-2">
+                  <label class="auth-label">Total Spots</label>
+                  <input type="number" class="form-control" v-model="newLot.max_spots" placeholder="20" />
+                </div>
+                <div class="col-md-3">
+                  <label class="auth-label">Address</label>
+                  <input class="form-control" v-model="newLot.address" placeholder="Area / Street" />
+                </div>
+                <div class="col-md-1">
+                  <label class="auth-label">Pin</label>
+                  <input class="form-control" v-model="newLot.pincode" placeholder="600001" />
+                </div>
+                <div class="col-md-1 text-end">
+                  <button
+                    class="btn-pill-sm w-100 mt-2 mt-md-0"
+                    :disabled="loading"
+                    @click="createLot"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Manage lots (edit + conditional delete) -->
+            <div class="table-card">
+              <div class="table-header">
+                <div>
+                  <div class="table-title">Manage Parking Lots</div>
+                </div>
+              </div>
+              <div class="table-responsive" style="max-height: 320px; overflow: auto;">
+                <table class="table table-hover align-middle">
+                  <thead>
+                    <tr>
+                      <th>Lot</th>
+                      <th>Address</th>
+                      <th>Pincode</th>
+                      <th>₹/hr</th>
+                      <th>Total</th>
+                      <th>Free</th>
+                      <th>Occupied</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-if="!adminDashboard || adminDashboard.lots.length === 0">
+                      <td colspan="8" class="text-center text-muted">No lots configured yet.</td>
+                    </tr>
+                    <tr
+                      v-for="lot in (adminDashboard ? adminDashboard.lots : [])"
+                      :key="lot.id"
+                    >
+                      <td>{{ lot.name }}</td>
+                      <td>{{ lot.address }}</td>
+                      <td>{{ lot.pincode }}</td>
+                      <td>₹{{ lot.price_per_hour }}</td>
+                      <td>{{ lot.total_spots }}</td>
+                      <td>{{ lot.available_spots }}</td>
+                      <td>{{ lot.occupied_spots }}</td>
+                      <td class="text-end">
+                        <button
+                          class="btn-soft btn-sm me-1"
+                          @click="prefillEditLot(lot)"
+                        >
+                          Edit
+                        </button>
+                        <!-- hide delete button if any occupied spots -->
+                        <button
+                          v-if="lot.occupied_spots === 0"
+                          class="btn-soft btn-sm text-danger"
+                          :disabled="loading"
+                          @click="deleteLot(lot.id)"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Inline edit form -->
+              <div v-if="editLot.id" class="mt-3 border-top pt-3">
+                <div class="chart-title mb-2">Edit Lot: {{ editLot.name }}</div>
+                <div class="row g-2 align-items-end">
+                  <div class="col-md-3">
+                    <label class="auth-label">Lot Name</label>
+                    <input class="form-control" v-model="editLot.name" />
+                  </div>
+                  <div class="col-md-2">
+                    <label class="auth-label">Price/hr</label>
+                    <input type="number" step="0.01" class="form-control" v-model="editLot.price_per_hour" />
+                  </div>
+                  <div class="col-md-2">
+                    <label class="auth-label">Max Spots</label>
+                    <input type="number" class="form-control" v-model="editLot.max_spots" />
+                  </div>
+                  <div class="col-md-3">
+                    <label class="auth-label">Address</label>
+                    <input class="form-control" v-model="editLot.address" />
+                  </div>
+                  <div class="col-md-1">
+                    <label class="auth-label">Pin</label>
+                    <input class="form-control" v-model="editLot.pincode" />
+                  </div>
+                  <div class="col-md-1 text-end">
+                    <button
+                      class="btn-pill-sm w-100 mt-2 mt-md-0"
+                      :disabled="loading"
+                      @click="updateLot"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- USERS TAB -->
+          <div v-if="adminTab === 'users'" class="mt-1">
+            <div class="cards-row mb-3">
+              <div class="stat-card">
+                <span class="stat-label">Total Users</span>
+                <span class="stat-main">
+                  {{ adminDashboard ? adminDashboard.users.length : 0 }}
+                </span>
+                <span class="stat-sub">All registered non-admin accounts</span>
+              </div>
+            </div>
+
+            <div class="tables-row-2 mb-3">
+              <div class="chart-card">
+                <div class="chart-header">
+                  <div>
+                    <div class="chart-title">User Status</div>
+                  </div>
+                </div>
+                <div class="chart-wrapper">
+                  <canvas id="adminUserStatusChart"></canvas>
+                </div>
+              </div>
+
+              <div class="table-card">
+                <div class="table-header">
+                  <div>
+                    <div class="table-title">Registered Users</div>
+                  </div>
+                </div>
+                <div class="table-responsive" style="max-height: 260px; overflow: auto;">
+                  <table class="table align-middle">
+                    <thead>
+                      <tr>
+                        <th>User</th>
+                        <th>Reservations</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-if="!adminDashboard || adminDashboard.users.length === 0">
+                        <td colspan="3" class="text-center text-muted">No users registered.</td>
+                      </tr>
+                      <tr
+                        v-for="u in (adminDashboard ? adminDashboard.users : [])"
+                        :key="u.id"
+                      >
+                        <td>{{ u.username }}</td>
+                        <td>{{ u.reservation_count }}</td>
+                        <td>
+                          <span
+                            class="badge-soft"
+                            :class="u.reservation_count > 0 ? 'badge-positive' : ''"
+                          >
+                            {{ u.reservation_count > 0 ? 'Active' : 'Inactive' }}
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- USER DASHBOARD VIEW -->
+        <div v-else>
+          <!-- Top stats -->
+          <div class="cards-row mb-3">
+            <div class="stat-card">
+              <span class="stat-label">Total Reservations</span>
+              <span class="stat-main">
+                {{ userDashboard ? userDashboard.summary.total_reservations : 0 }}
+              </span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Total Spent</span>
+              <span class="stat-main">
+                ₹{{ userDashboard ? userDashboard.summary.total_spent.toFixed(2) : '0.00' }}
+              </span>
+              <span class="stat-sub">
+                Most used lot:
+                {{ userDashboard && userDashboard.summary.most_used_lot ? userDashboard.summary.most_used_lot : '—' }}
+              </span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Active Status</span>
+              <span class="stat-main">
+                {{ userDashboard && userDashboard.current ? 'Currently Parked' : 'Not Parked' }}
+              </span>
+              <span class="stat-sub">
+                {{ userDashboard && userDashboard.current ? 'Release the spot once you exit.' : 'Book a spot in an available lot.' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Usage chart + current reservation / available lots -->
+          <div class="tables-row-2 mb-3">
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">Your Parking Usage</div>
+                </div>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="userLotUsageChart"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">Current Reservation</div>
+                </div>
+              </div>
+
+              <div v-if="userDashboard && userDashboard.current">
+                <p class="mb-1" style="font-size:1rem;">
+                  <strong>Lot:</strong>
+                  {{ userDashboard.current.lot_name || 'Unknown' }}
+                </p>
+                <p class="mb-1" style="font-size:1rem;">
+                  <strong>Spot:</strong> {{ userDashboard.current.spot_id }}
+                </p>
+                <p class="mb-3" style="font-size:1rem;">
+                  <strong>Started:</strong>
+                  {{ formatDateTime(userDashboard.current.start_time) }}
+                </p>
+                <button
+                  class="btn-pill-sm"
+                  :disabled="loading"
+                  @click="userRelease(userDashboard.current.id)"
+                >
+                  Release Spot
+                </button>
+              </div>
+              <div v-else class="text-muted mb-3" style="font-size:1rem;">
+                No active reservation. Choose a lot with available spots below.
+              </div>
+
+              <hr class="border-secondary border-opacity-25 my-3">
+
+              <div>
+                <div class="chart-title mb-2">Available Parking Lots</div>
+                <div v-if="userDashboard && userDashboard.lots.length === 0"
+                     class="text-muted" style="font-size:1rem;">
+                  No lots with free spots at this moment.
+                </div>
+
+                <div
+                  v-for="lot in (userDashboard ? userDashboard.lots : [])"
+                  :key="lot.id"
+                  class="d-flex justify-content-between align-items-center mb-2"
+                >
+                  <div>
+                    <div class="fw-semibold" style="font-size:1rem;">{{ lot.name }}</div>
+                    <div class="text-muted" style="font-size:.95rem;">
+                      ₹{{ lot.price_per_hour }}/hr · {{ lot.available_spots }} free
+                    </div>
+                  </div>
+                  <button
+                    class="btn-pill-sm"
+                    :disabled="loading"
+                    @click="userBook(lot.id)"
+                  >
+                    Book Spot
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- History -->
+          <div class="table-card">
+            <div class="table-header">
+              <div>
+                <div class="table-title">Reservation History</div>
+              </div>
+            </div>
+            <div class="table-responsive" style="max-height: 320px; overflow: auto;">
+              <table class="table align-middle">
+                <thead>
+                  <tr>
+                    <th>Lot</th>
+                    <th>Spot</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Cost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="!userDashboard || userDashboard.history.length === 0">
+                    <td colspan="5" class="text-center text-muted">
+                      No reservations yet.
+                    </td>
+                  </tr>
+                  <tr v-for="r in (userDashboard ? userDashboard.history : [])" :key="r.id">
+                    <td>{{ r.lot_name || 'Unknown' }}</td>
+                    <td>{{ r.spot_id }}</td>
+                    <td>{{ formatDateTime(r.start_time) }}</td>
+                    <td>{{ r.end_time ? formatDateTime(r.end_time) : '-' }}</td>
+                    <td>
+                      <span v-if="r.cost != null">₹{{ r.cost.toFixed(2) }}</span>
+                      <span v-else>-</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+{% endraw %}
+
+<!-- External Vue app logic -->
+<script src="/static/app.js"></script>
+</body>
+</html>
