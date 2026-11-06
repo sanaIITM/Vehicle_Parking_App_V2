@@ -14,6 +14,14 @@ The system uses **Flask for APIs**, **VueJS for UI**, **SQLite for persistence**
 
 ---
 
+## ☁️ Live Demo
+
+**Live application:** https://vehicle-parking-app-v2-c2m1.onrender.com
+
+The hosted version is a free-tier demo. Its SQLite database is stored on the service's ephemeral filesystem, so records may be lost when the service restarts, redeploys, or spins down. The free web-only deployment does not run Celery workers or scheduled jobs; email and background-task features require separate worker, Redis, and SMTP configuration.
+
+---
+
 ## 🧱 Tech Stack
 
 - **Backend**: Flask (Python)
@@ -160,7 +168,7 @@ Vehicle_Parking_App_V2/
 │ │ └── app.js
 ├── templates/
 │ ├── index.html
-│ └── email_monthly_report.html
+│ ├── email_monthly_report.html
 ├── instance/
 │ └── (SQLite database created at runtime)
 ├── requirements.txt
@@ -181,7 +189,7 @@ cd Vehicle_Parking_App_V2
 ### 2. Create Virtual Environment
 ```bash
 python -m venv venv
-venv\Scripts\activate     # Windows
+venv\\Scripts\\activate     # Windows
 source venv/bin/activate # Linux / Mac
 ```
 
