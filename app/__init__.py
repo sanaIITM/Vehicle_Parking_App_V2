@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 import os
+
 load_dotenv()
 
 from flask import Flask
@@ -7,7 +8,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_caching import Cache
 from flask_mail import Mail
-import os
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -21,41 +21,37 @@ def create_app():
     # ---------- Core Flask config ----------
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'devkey')
 
-    # Ensure SQLite DB is created programmatically inside instance/
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///parking.db'
+    # The hosted demo uses SQLite. Render's free filesystem is ephemeral.
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+        'DATABASE_URL', 'sqlite:///parking.db'
+    )
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # ---------- Redis & Caching ----------
-    app.config['REDIS_URL'] = os.environ.get(
-        'REDIS_URL',
-        'redis://localhost:6379/0'
-    )
-
-    app.config['CACHE_TYPE'] = 'RedisCache'
-    app.config['CACHE_REDIS_URL'] = app.config['REDIS_URL']
+    # Use Redis when configured; fall back to in-process memory for a
+    # single-service demo that does not provision a Redis connection.
+    redis_url = os.environ.get('REDIS_URL')
+    app.config['REDIS_URL'] = redis_url or ''
+    if redis_url:
+        app.config['CACHE_TYPE'] = 'RedisCache'
+        app.config['CACHE_REDIS_URL'] = redis_url
+        app.config['CELERY_BROKER_URL'] = redis_url
+        app.config['CELERY_RESULT_BACKEND'] = redis_url
+    else:
+        app.config['CACHE_TYPE'] = 'SimpleCache'
+        app.config['CELERY_BROKER_URL'] = 'memory://'
+        app.config['CELERY_RESULT_BACKEND'] = 'cache+memory://'
     app.config['CACHE_DEFAULT_TIMEOUT'] = 60
-
-    # ---------- Celery (Redis broker & backend) ----------
-    app.config['CELERY_BROKER_URL'] = app.config['REDIS_URL']
-    app.config['CELERY_RESULT_BACKEND'] = app.config['REDIS_URL']
 
     # ---------- Mail configuration ----------
     app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
     app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
     app.config['MAIL_USE_TLS'] = True
     app.config['MAIL_USE_SSL'] = False
-
-    app.config['MAIL_USERNAME'] = os.environ.get(
-        'MAIL_USERNAME',
-        'your_email@example.com'
-    )
-    app.config['MAIL_PASSWORD'] = os.environ.get(
-        'MAIL_PASSWORD',
-        'your_password'
-    )
+    app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', '')
+    app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', '')
     app.config['MAIL_DEFAULT_SENDER'] = os.environ.get(
-        'MAIL_DEFAULT_SENDER',
-        app.config['MAIL_USERNAME']
+        'MAIL_DEFAULT_SENDER', app.config['MAIL_USERNAME']
     )
 
     # ---------- Init extensions ----------
